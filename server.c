@@ -18,13 +18,6 @@ int main(void) {
         return 1;
     }
 
-    int flag = 1;
-    if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &flag, sizeof(flag)) < 0) {
-        perror("setsockopt");
-        close(server_fd);
-        return 1;
-    }
-
     memset(&addr, 0, sizeof(addr));
     addr.sin_family = AF_INET;
     addr.sin_addr.s_addr = INADDR_ANY;
@@ -42,7 +35,7 @@ int main(void) {
         return 1;
     }
 
-    printf("Server listening on port %d...\n", PORT);
+    printf("Server listening on port %d\n", PORT);
 
     client_fd = accept(server_fd, (struct sockaddr *)&addr, &addr_len);
     if (client_fd < 0) {
@@ -51,10 +44,10 @@ int main(void) {
         return 1;
     }
 
-    printf("Client connected!\n");
+    printf("Client connected\n");
 
     close(client_fd);
     close(server_fd);
-    printf("Done.\n");
+    printf("Done\n");
     return 0;
 }
