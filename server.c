@@ -6,11 +6,14 @@
 #include <sys/socket.h>
 
 #define PORT 8080
+#define BUF_SIZE 64
 
 int main(void) {
     int server_fd, client_fd;
     struct sockaddr_in addr;
     socklen_t addr_len = sizeof(addr);
+    char buf[BUF_SIZE];
+    ssize_t n;
 
     server_fd = socket(AF_INET, SOCK_STREAM, 0);
     if (server_fd < 0) {
@@ -45,6 +48,36 @@ int main(void) {
     }
 
     printf("Client connected\n");
+
+    memset(buf, 0, BUF_SIZE);
+    n = read(client_fd, buf, BUF_SIZE - 1);
+    if (n < 0) {
+        perror("read");
+        close(client_fd);
+        close(server_fd);
+        return 1;
+    }
+    if (n == 0) {
+        printf("Client closed connection\n");
+        close(client_fd);
+        close(server_fd);
+        return 0;
+    }
+
+    buf[n] = '\0';
+    printf("Got: %s", buf);
+
+    if (strncmp(buf, "ping", 4) == 0) {
+        if (write(client_fd, "pong\n", 5) < 0) {
+            perror("write");
+            close(client_fd);
+            close(server_fd);
+            return 1;
+        }
+        printf("Sent: pong\n");
+    } else {
+        printf("Not a ping, ignore\n");
+    }
 
     close(client_fd);
     close(server_fd);
