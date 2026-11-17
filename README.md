@@ -11,6 +11,14 @@ CMake (опционально)
 gcc server.c -o server
 gcc client.c -o client
 
+## Сборка через CMake
+mkdir -p build
+cd build
+cmake ..
+make
+./server
+./client
+
 ## Запуск
 Сначала сервер, потом клиент (два терминала):
 ./server
