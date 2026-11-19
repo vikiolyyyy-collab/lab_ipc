@@ -6,7 +6,7 @@
 #include <sys/socket.h>
 
 #define PORT 8080
-#define BUF_SIZE 64
+#define BUF_SIZE 256
 
 int main(void) {
     int server_fd, client_fd;
@@ -49,34 +49,31 @@ int main(void) {
 
     printf("Client connected\n");
 
-    memset(buf, 0, BUF_SIZE);
-    n = read(client_fd, buf, BUF_SIZE - 1);
-    if (n < 0) {
-        perror("read");
-        close(client_fd);
-        close(server_fd);
-        return 1;
-    }
-    if (n == 0) {
-        printf("Client closed connection\n");
-        close(client_fd);
-        close(server_fd);
-        return 0;
-    }
-
-    buf[n] = '\0';
-    printf("Got: %s", buf);
-
-    if (strncmp(buf, "ping", 4) == 0) {
-        if (write(client_fd, "pong\n", 5) < 0) {
-            perror("write");
-            close(client_fd);
-            close(server_fd);
-            return 1;
+    while (1) {
+        memset(buf, 0, BUF_SIZE);
+        n = read(client_fd, buf, BUF_SIZE - 1);
+        if (n < 0) {
+            perror("read");
+            break;
         }
-        printf("Sent: pong\n");
-    } else {
-        printf("Not a ping, ignore\n");
+        if (n == 0) {
+            printf("Client disconnected\n");
+            break;
+        }
+
+        buf[n] = '\0';
+        printf("Got: %s", buf);
+
+        if (strncmp(buf, "exit", 4) == 0) {
+            printf("Exit requested\n");
+            break;
+        }
+
+        if (write(client_fd, buf, (size_t)n) < 0) {
+            perror("write");
+            break;
+        }
+        printf("Echo sent\n");
     }
 
     close(client_fd);

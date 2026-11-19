@@ -6,7 +6,7 @@
 #include <sys/socket.h>
 
 #define PORT 8080
-#define BUF_SIZE 64
+#define BUF_SIZE 256
 
 int main(void) {
     int sock_fd;
@@ -23,7 +23,6 @@ int main(void) {
     memset(&addr, 0, sizeof(addr));
     addr.sin_family = AF_INET;
     addr.sin_port = htons(PORT);
-
     if (inet_pton(AF_INET, "127.0.0.1", &addr.sin_addr) <= 0) {
         perror("inet_pton");
         close(sock_fd);
@@ -37,29 +36,40 @@ int main(void) {
     }
 
     printf("Connected to server\n");
+    printf("Type messages (exit to quit)\n");
 
-    if (write(sock_fd, "ping\n", 5) < 0) {
-        perror("write");
-        close(sock_fd);
-        return 1;
-    }
-    printf("Sent: ping\n");
+    while (1) {
+        printf("> ");
+        fflush(stdout);
 
-    memset(buf, 0, BUF_SIZE);
-    n = read(sock_fd, buf, BUF_SIZE - 1);
-    if (n < 0) {
-        perror("read");
-        close(sock_fd);
-        return 1;
-    }
-    if (n == 0) {
-        printf("Server closed connection\n");
-        close(sock_fd);
-        return 1;
-    }
+        if (fgets(buf, BUF_SIZE, stdin) == NULL) {
+            break;
+        }
 
-    buf[n] = '\0';
-    printf("Got: %s", buf);
+        n = (ssize_t)strlen(buf);
+        if (write(sock_fd, buf, (size_t)n) < 0) {
+            perror("write");
+            break;
+        }
+
+        if (strncmp(buf, "exit", 4) == 0) {
+            break;
+        }
+
+        memset(buf, 0, BUF_SIZE);
+        n = read(sock_fd, buf, BUF_SIZE - 1);
+        if (n < 0) {
+            perror("read");
+            break;
+        }
+        if (n == 0) {
+            printf("Server closed connection\n");
+            break;
+        }
+
+        buf[n] = '\0';
+        printf("Server: %s", buf);
+    }
 
     close(sock_fd);
     printf("Done\n");
