@@ -1,41 +1,32 @@
-# Lab 1 — IPC (client/server, ping-pong)
+# Lab 1 — IPC (client/server, chat)
 
-Два приложения на C: клиент шлёт ping, сервер отвечает pong по TCP.
+Два приложения на C. Обмен по TCP (localhost, порт 8080).
+Клиент присылает строки, сервер отвечает эхом. Выход: exit.
 
 ## Статус
-- [x] Окружение: WSL Ubuntu, gcc - [x] TCP server (socket, bind, listen, accept) - [x] TCP client (socket, connect) - [x] 
-Обмен ping / pong - [x] Базовая обработка ошибок - [ ] Состояния по диаграмме - [ ] Чат + история (опционально) - [ ] 
-CMake (опционально)
+- [x] Окружение: WSL Ubuntu, gcc
+- [x] TCP server / client
+- [x] Простой чат (эхо)
+- [x] Выход по exit
+- [x] Базовая обработка ошибок
+- [x] CMake
+- [ ] История переписки 
 
-## Сборка
-gcc server.c -o server
-gcc client.c -o client
-
-## Сборка через CMake
+## Сборка (CMake)
 mkdir -p build
 cd build
 cmake ..
 make
-./server
-./client
 
 ## Запуск
-Сначала сервер, потом клиент (два терминала):
+Два терминала, сначала сервер:
+
 ./server
+
 ./client
 
-Сервер слушает порт 8080 на localhost (127.0.0.1).
+Пишите сообщения в клиенте. Для выхода: exit
 
-## Ожидаемый вывод
-Сервер:
-Server listening on port 8080
-Client connected
-Got: ping
-Sent: pong
-Done
-
-Клиент:
-Connected to server
-Sent: ping
-Got: pong
-Done
+## Сборка вручную 
+gcc server.c -o server
+gcc client.c -o client
