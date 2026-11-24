@@ -7,6 +7,7 @@
 
 #define PORT 8080
 #define BUF_SIZE 256
+#define HISTORY_FILE "history.txt"
 
 int main(void) {
     int server_fd, client_fd;
@@ -14,6 +15,7 @@ int main(void) {
     socklen_t addr_len = sizeof(addr);
     char buf[BUF_SIZE];
     ssize_t n;
+    FILE *hist = NULL;
 
     server_fd = socket(AF_INET, SOCK_STREAM, 0);
     if (server_fd < 0) {
@@ -49,6 +51,11 @@ int main(void) {
 
     printf("Client connected\n");
 
+    hist = fopen(HISTORY_FILE, "a");
+    if (hist == NULL) {
+        perror("fopen history");
+    }
+
     while (1) {
         memset(buf, 0, BUF_SIZE);
         n = read(client_fd, buf, BUF_SIZE - 1);
@@ -64,6 +71,11 @@ int main(void) {
         buf[n] = '\0';
         printf("Got: %s", buf);
 
+        if (hist != NULL) {
+            fprintf(hist, "%s", buf);
+            fflush(hist);
+        }
+
         if (strncmp(buf, "exit", 4) == 0) {
             printf("Exit requested\n");
             break;
@@ -76,6 +88,9 @@ int main(void) {
         printf("Echo sent\n");
     }
 
+    if (hist != NULL) {
+        fclose(hist);
+    }
     close(client_fd);
     close(server_fd);
     printf("Done\n");
